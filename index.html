@@ -20,11 +20,11 @@
         function resolveObject(name, object) {
             let stringToReturn = '';
             for (const [key, value] of Object.entries(object)) {
-                if(value instanceof Object) {
+                if (value instanceof Object) {
                     stringToReturn += resolveObject(`${name}[${key}]`, value);
                     continue;
                 }
-                if(value instanceof Array) {
+                if (value instanceof Array) {
                     stringToReturn += resolveArray(`${name}[${key}]`, value);
                     continue;
                 }
@@ -42,8 +42,8 @@
                 }
 
                 if (value instanceof Array) {
-                   stringToReturn += resolveArray(`${name}[${index}]`, value);
-                   return;
+                    stringToReturn += resolveArray(`${name}[${index}]`, value);
+                    return;
                 }
 
                 stringToReturn += `${name}[${index}]:${value}\n`
@@ -53,21 +53,18 @@
 
         document.querySelector('.convert-json').addEventListener('click', (e) => {
             const jsonValues = document.querySelector('.jsonValues').value;
-            console.log(jsonValues);
-            console.log(JSON.parse(jsonValues));
             const jsonObject = JSON.parse(jsonValues);
-            console.log(Object.entries(jsonObject));
             let formDataString = '';
             for (const [key, value] of Object.entries(jsonObject)) {
-                console.log(`${key}: ${value}`);
+                // console.log(`${key}: ${value}`);
 
-                if(value instanceof Object) {
+                if (value instanceof Object) {
                     console.log('Is object');
                     formDataString += resolveObject(key, value);
                     continue;
                 }
 
-                if(value instanceof Array) {
+                if (value instanceof Array) {
                     formDataString += resolveArray(key, value);
                 }
 
