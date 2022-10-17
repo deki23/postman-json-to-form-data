@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Postman JSON to form-data converter</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+    <div style="display: block;">
+        <textarea rows="20" class="jsonValues" name="jsonValues" placeholder="Copy your raw json body here"></textarea>
+        <button class="convert-json">Convert</button>
+    </div>
+
+    <textarea rows="20" class="formDataValues" name="formDataValues" placeholder="Your form-data will appear here"></textarea>
+
+    <script>
+
+        function resolveObject(name, object) {
+            let stringToReturn = '';
+            for (const [key, value] of Object.entries(object)) {
+                if(value instanceof Object) {
+                    stringToReturn += resolveObject(`${name}[${key}]`, value);
+                    continue;
+                }
+                if(value instanceof Array) {
+                    stringToReturn += resolveArray(`${name}[${key}]`, value);
+                    continue;
+                }
+                stringToReturn += `${name}[${key}]:${value}\n`
+            }
+            return stringToReturn;
+        }
+
+        function resolveArray(name, array) {
+            let stringToReturn = '';
+            array.forEach((value, index) => {
+                if (value instanceof Object) {
+                    stringToReturn += resolveObject(`${name}[${index}]`, value);
+                    return;
+                }
+
+                if (value instanceof Array) {
+                   stringToReturn += resolveArray(`${name}[${index}]`, value);
+                   return;
+                }
+
+                stringToReturn += `${name}[${index}]:${value}\n`
+            })
+            return stringToReturn;
+        }
+
+        document.querySelector('.convert-json').addEventListener('click', (e) => {
+            const jsonValues = document.querySelector('.jsonValues').value;
+            console.log(jsonValues);
+            console.log(JSON.parse(jsonValues));
+            const jsonObject = JSON.parse(jsonValues);
+            console.log(Object.entries(jsonObject));
+            let formDataString = '';
+            for (const [key, value] of Object.entries(jsonObject)) {
+                console.log(`${key}: ${value}`);
+
+                if(value instanceof Object) {
+                    console.log('Is object');
+                    formDataString += resolveObject(key, value);
+                    continue;
+                }
+
+                if(value instanceof Array) {
+                    formDataString += resolveArray(key, value);
+                }
+
+                formDataString += `${key}:${value}\n`
+            }
+            document.querySelector('.formDataValues').value = formDataString;
+        })
+    </script>
+    </body>
+</html>
