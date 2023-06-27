@@ -34,7 +34,10 @@ This tool aims to provide users with a quick way to move from JSON to form data 
 ## Limitations
 
 Since this uses recursion when it finds nested objects, it may not work for massive data, e.g., more than 1000 nested entries.
-
 ## Support
 
 If you find any bugs, feel free to submit a GitHub issue.
+
+## License
+
+This project is [MIT licensed.](https://github.com/deki23/postman-json-to-form-data/blob/main/LICENSE)
