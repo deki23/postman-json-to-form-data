@@ -5,72 +5,159 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Postman JSON to form-data converter</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure.css">
+        <style>
+            /* Custom styles */
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .header {
+                background-color: #22668D;
+                color: #FFFADD;
+                text-align: center;
+                padding: 20px 0;
+            }
+
+            .footer {
+                background-color: #22668D;
+                color: #FFFADD;
+                text-align: center;
+                padding: 10px 0;
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+            }
+
+            .container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 80vh;
+            }
+
+            .text-area-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 80%;
+            }
+
+            .textarea {
+                width: 45%;
+                min-height: 65vh;
+            }
+
+            .separator-container {
+                margin: 0 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .link {
+                text-decoration: none;
+                color: #FFCC70;
+            }
+
+            .button-d {
+                background: #22668D;
+                color: #FFFADD;
+            }
+        </style>
     </head>
     <body>
-    <div style="display: block;">
-        <textarea rows="20" class="jsonValues" name="jsonValues" placeholder="Copy your raw json body here"></textarea>
-        <button class="convert-json">Convert</button>
+    <div class="header">
+        <h1>Postman { JSON } to form-data</h1>
     </div>
-
-    <textarea rows="20" class="formDataValues" name="formDataValues" placeholder="Your form-data will appear here"></textarea>
-
+    <div class="container">
+        <form class="pure-form text-area-container">
+            <textarea class="textarea pure-input-rounded jsonValues" placeholder="Copy your raw JSON body here"></textarea>
+            <div class="separator-container">
+                <button class="button-d pure-button convert-json">Convert</button>
+            </div>
+            <textarea class="textarea pure-input-rounded code formDataValues" placeholder="Your form-data will appear here" readonly></textarea>
+        </form>
+    </div>
+    <div class="footer">
+        Copyright &copy; 2022-2023 MIT by Dejan Cavic |
+        <a class="link" target="_blank" href="https://github.com/deki23/postman-json-to-form-data">Github</a>
+    </div>
     <script>
-
         function resolveObject(name, object) {
-            let stringToReturn = '';
-            for (const [key, value] of Object.entries(object)) {
-                if (value instanceof Object) {
-                    stringToReturn += resolveObject(`${name}[${key}]`, value);
-                    continue;
-                }
-                if (value instanceof Array) {
-                    stringToReturn += resolveArray(`${name}[${key}]`, value);
-                    continue;
-                }
-                stringToReturn += `${name}[${key}]:${value}\n`
+          let stringToReturn = '';
+          for (const [key, value] of Object.entries(object)) {
+            if (value instanceof Object) {
+              stringToReturn += resolveObject(`${name}[${key}]`, value);
+              continue;
             }
-            return stringToReturn;
+            if (value instanceof Array) {
+              stringToReturn += resolveArray(`${name}[${key}]`, value);
+              continue;
+            }
+            stringToReturn += `${name}[${key}]:${value}\n`
+          }
+          return stringToReturn;
         }
 
         function resolveArray(name, array) {
-            let stringToReturn = '';
-            array.forEach((value, index) => {
-                if (value instanceof Object) {
-                    stringToReturn += resolveObject(`${name}[${index}]`, value);
-                    return;
-                }
+          let stringToReturn = '';
+          array.forEach((value, index) => {
+            if (value instanceof Object) {
+              stringToReturn += resolveObject(`${name}[${index}]`, value);
+              return;
+            }
 
-                if (value instanceof Array) {
-                    stringToReturn += resolveArray(`${name}[${index}]`, value);
-                    return;
-                }
+            if (value instanceof Array) {
+              stringToReturn += resolveArray(`${name}[${index}]`, value);
+              return;
+            }
 
-                stringToReturn += `${name}[${index}]:${value}\n`
-            })
-            return stringToReturn;
+            stringToReturn += `${name}[${index}]:${value}\n`
+          })
+          return stringToReturn;
         }
 
         document.querySelector('.convert-json').addEventListener('click', (e) => {
+          try {
+            e.preventDefault();
+            e.target.textContent = 'Converting...';
             const jsonValues = document.querySelector('.jsonValues').value;
             const jsonObject = JSON.parse(jsonValues);
             let formDataString = '';
             for (const [key, value] of Object.entries(jsonObject)) {
-                // console.log(`${key}: ${value}`);
 
-                if (value instanceof Object) {
-                    console.log('Is object');
-                    formDataString += resolveObject(key, value);
-                    continue;
-                }
+              if (value instanceof Object) {
+                console.log('Is object');
+                formDataString += resolveObject(key, value);
+                continue;
+              }
 
-                if (value instanceof Array) {
-                    formDataString += resolveArray(key, value);
-                }
+              if (value instanceof Array) {
+                formDataString += resolveArray(key, value);
+              }
 
-                formDataString += `${key}:${value}\n`
+              formDataString += `${key}:${value}\n`
             }
             document.querySelector('.formDataValues').value = formDataString;
+
+          } catch (err) {
+            // SyntaxError is in case JSON.parse() fails (invalid JSON)
+            if (err instanceof SyntaxError) {
+              document.querySelector('.jsonValues').setCustomValidity('Invalid JSON');
+              document.querySelector('.jsonValues').reportValidity()
+              setTimeout(() => {
+                document.querySelector('.jsonValues').setCustomValidity("")
+              }, 800)
+            } else {
+              alert('Unknown error, please create a github issue with your use case.')
+            }
+          } finally {
+            setTimeout(() => {
+              e.target.textContent = 'Convert';
+            }, 200)
+          }
         })
     </script>
     </body>
